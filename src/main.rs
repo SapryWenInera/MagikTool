@@ -7,11 +7,8 @@ use crate::{
     operations::{convertion::functions::convert_image, generics::functions::chooser},
     parser::Parser,
 };
-use std::time::Instant;
 
 fn main() {
-    let start = Instant::now();
-
     let mut args = Parser::new();
 
     args.args_parse();
@@ -29,6 +26,4 @@ fn main() {
     );
 
     let duration = start.elapsed().as_secs_f64();
-
-    println!("{} ms", duration * 1000 as f64)
 }
