@@ -24,6 +24,4 @@ fn main() {
         args.options,
         &args.format,
     );
-
-    let duration = start.elapsed().as_secs_f64();
 }
