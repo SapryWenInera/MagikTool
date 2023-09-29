@@ -4,7 +4,7 @@ use std::{
     collections::HashSet,
     io::{stdout, Write},
     path::Path,
-    process::Command,
+    process::{Command, Stdio},
     sync::Arc,
 };
 
@@ -24,9 +24,9 @@ pub fn convert_image(
             let _ = command(input, output, args.clone());
         }),
         false => images.iter().for_each(|image| {
-            let input: Arc<str> = input.ends_with_plus("/", image);
+            let input: Arc<str> = Arc::from(input);
 
-            let output: Arc<str> = output.img_to_img(image, img_format);
+            let output: Arc<str> = output.output_to_img(image, img_format);
 
             let _ = command(input, output, args.clone());
         }),
@@ -38,17 +38,18 @@ fn command(input: Arc<str>, output: Arc<str>, args: Vec<String>) {
     let path = &output.as_ref().output_clean();
 
     args.insert(0, input.to_string());
-    args.push(input.to_string());
+    args.push(output.to_string());
 
     if !Path::new(path).exists() {
         match Command::new("convert")
             .args(args)
+            .stderr(Stdio::inherit())
             .spawn()
             .expect("convert not found in $PATH")
-            .wait()
+            .wait_with_output()
         {
             Ok(_) => {
-                print!("\r{} to {} successful.", input, output);
+                print!("\r{} to {} successful.", input, path);
                 stdout().flush().unwrap();
             }
             Err(e) => println!("Error; {}", e),
@@ -56,4 +57,5 @@ fn command(input: Arc<str>, output: Arc<str>, args: Vec<String>) {
     } else {
         println!("{} exists.", path)
     }
+    print!("\n");
 }
