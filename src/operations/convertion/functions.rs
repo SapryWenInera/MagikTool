@@ -1,5 +1,5 @@
 use crate::{err_handling::functions::Endswith, operations::image::functions::ImgtoImg};
-use rayon::prelude::*;
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use std::{
     collections::HashSet,
     io::{stdout, Write},
@@ -23,7 +23,13 @@ pub fn convert_image(
 
             let _ = command(input, output, args.clone());
         }),
-        false => println!("File"),
+        false => images.iter().for_each(|image| {
+            let input: Arc<str> = input.ends_with_plus("/", image);
+
+            let output: Arc<str> = output.img_to_img(image, img_format);
+
+            let _ = command(input, output, args.clone());
+        }),
     }
 }
 
