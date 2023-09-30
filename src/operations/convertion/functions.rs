@@ -35,7 +35,7 @@ pub fn convert_image(
             let input: Arc<str> = Arc::from(input);
 
             let output: Arc<str> = output.output_to_img(image, img_format);
-
+            pb.inc(1);
             let _ = command(input.as_ref(), output.as_ref(), args.clone());
         }),
     }
