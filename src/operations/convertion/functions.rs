@@ -1,8 +1,8 @@
 use crate::{err_handling::functions::Endswith, operations::image::functions::ImgtoImg};
+use indicatif::{ProgressBar, ProgressStyle};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use std::{
     collections::HashSet,
-    io::{stdout, Write},
     path::Path,
     process::{Command, Stdio},
     sync::Arc,
@@ -15,27 +15,36 @@ pub fn convert_image(
     args: Vec<String>,
     img_format: &str,
 ) {
+    let pb = ProgressBar::new(images.len() as u64);
+    pb.set_style(
+        ProgressStyle::with_template("[2/2] [{elapsed_precise}] [{wide_bar:.green/red}]    {human_pos:.cyan}/{human_len:.blue} {spinner}",
+        )
+        .unwrap()
+        .progress_chars("●>-"),
+    );
     match Path::new(input).is_dir() {
         true => images.par_iter().for_each(|image| {
             let input: Arc<str> = input.ends_with_plus("/", image);
 
             let output: Arc<str> = output.img_to_img(image, img_format);
 
-            let _ = command(input, output, args.clone());
+            let _ = command(input.as_ref(), output.as_ref(), args.clone());
+            pb.inc(1);
         }),
         false => images.iter().for_each(|image| {
             let input: Arc<str> = Arc::from(input);
 
             let output: Arc<str> = output.output_to_img(image, img_format);
-
-            let _ = command(input, output, args.clone());
+            pb.inc(1);
+            let _ = command(input.as_ref(), output.as_ref(), args.clone());
         }),
     }
+    pb.finish();
 }
 
-fn command(input: Arc<str>, output: Arc<str>, args: Vec<String>) {
+fn command(input: &str, output: &str, args: Vec<String>) {
     let mut args = args;
-    let path = &output.as_ref().output_clean();
+    let path = &output.output_clean();
 
     args.insert(0, input.to_string());
     args.push(output.to_string());
@@ -46,16 +55,10 @@ fn command(input: Arc<str>, output: Arc<str>, args: Vec<String>) {
             .stderr(Stdio::inherit())
             .spawn()
             .expect("convert not found in $PATH")
-            .wait_with_output()
+            .wait()
         {
-            Ok(_) => {
-                print!("\r{} to {} successful.", input, path);
-                stdout().flush().unwrap();
-            }
+            Ok(_) => (),
             Err(e) => println!("Error; {}", e),
         }
-    } else {
-        println!("{} exists.", path)
     }
-    print!("\n");
 }

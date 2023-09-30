@@ -1,7 +1,6 @@
 use crate::err_handling::functions::Endswith;
 use itertools::Itertools;
-use std::ffi::OsStr;
-use std::sync::Arc;
+use std::{ffi::OsStr, sync::Arc};
 
 const EXTENSIONS: [&str; 7] = ["jpeg", "jpg", "jxl", "png", "heic", "png", "webp"];
 

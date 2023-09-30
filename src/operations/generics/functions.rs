@@ -1,8 +1,6 @@
 use crate::operations::path::functions::extract_files;
 use core::panic;
-use std::path::Path;
-use std::sync::Arc;
-use std::{collections::HashSet, fs::metadata};
+use std::{collections::HashSet, fs::metadata, path::Path, sync::Arc};
 
 pub fn chooser(input: &str) -> HashSet<Arc<str>> {
     match metadata(input) {
