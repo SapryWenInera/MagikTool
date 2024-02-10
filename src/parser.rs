@@ -58,7 +58,7 @@ impl Parser {
 
         self.input = PathBuf::from(input);
         self.output = if output.is_empty() {
-            PathBuf::from(input)
+            self.input.clone()
         } else {
             PathBuf::from(output)
         };
