@@ -6,7 +6,6 @@ use tokio::fs::read_dir;
 use self::image::ImageManipulation;
 
 pub mod convertion;
-pub mod generics;
 pub mod image;
 
 pub async fn index_images<S: AsRef<str>>(input: S) -> Result<HashMap<PathBuf, Box<str>>, Error> {
