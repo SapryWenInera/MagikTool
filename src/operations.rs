@@ -8,9 +8,9 @@ use self::image::ImageManipulation;
 pub mod convertion;
 pub mod image;
 
-pub async fn index_images<S: AsRef<str>>(input: S) -> Result<HashMap<PathBuf, Box<str>>, Error> {
+pub async fn index_images<P: Into<PathBuf>>(input: P) -> Result<HashMap<PathBuf, Box<str>>, Error> {
     let mut map = HashMap::new();
-    let mut entries = read_dir(input.as_ref()).await?;
+    let mut entries = read_dir(input.into()).await?;
 
     for entry in entries
         .next_entry()
