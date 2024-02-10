@@ -21,12 +21,12 @@ pub async fn index_images<P: Into<PathBuf>>(input: P) -> Result<HashMap<PathBuf,
             None => None,
         })
         .filter_map(|f| f.is_image())
-        .map(|path| (path.clone(), String::from(path.to_str().unwrap())))
+        .map(|path| (path.clone(), String::from(path.to_string_lossy())))
     {
         let (key, value) = entry;
 
         map.insert(key, Box::from(value));
     }
     drop(entries);
-    return Ok(map);
+    Ok(map)
 }
