@@ -3,12 +3,13 @@ use std::io::Error;
 use std::path::PathBuf;
 use tokio::fs::read_dir;
 
+use self::image::ImageManipulation;
+
 pub mod convertion;
 pub mod generics;
-//pub mod image;
-pub mod path;
+pub mod image;
 
-pub async fn index_files<S: AsRef<str>>(input: S) -> Result<HashMap<PathBuf, Box<str>>, Error> {
+pub async fn index_images<S: AsRef<str>>(input: S) -> Result<HashMap<PathBuf, Box<str>>, Error> {
     let mut map = HashMap::new();
     let mut entries = read_dir(input.as_ref()).await?;
 
@@ -20,6 +21,7 @@ pub async fn index_files<S: AsRef<str>>(input: S) -> Result<HashMap<PathBuf, Box
             Some(value) => Some(value.path()),
             None => None,
         })
+        .filter_map(|f| f.is_image())
         .map(|path| (path.clone(), String::from(path.to_str().unwrap())))
     {
         let (key, value) = entry;
