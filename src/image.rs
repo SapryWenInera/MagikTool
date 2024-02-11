@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-const EXTENSIONS: [&str; 7] = ["jpeg", "jpg", "jxl", "png", "heic", "png", "webp"];
+const EXTENSIONS: [&str; 6] = ["heic", "jpeg", "jpg", "jxl", "png", "webp"];
 
 pub trait ImageManipulation {
     fn is_image(&self) -> Option<PathBuf>;
