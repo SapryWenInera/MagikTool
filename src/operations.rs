@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use std::io::Error;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -6,21 +6,18 @@ use tokio::fs::read_dir;
 use crate::image::ImageManipulation;
 
 pub trait PathBufExtras {
-    async fn merge_images<S: AsRef<str>>(&self, map: HashMap<PathBuf, Arc<str>>, format: S) -> HashMap<PathBuf, Arc<str>>;
+    async fn merge_images<S: AsRef<str>>(&self, map: BTreeMap<PathBuf, Arc<str>>, format: S) -> BTreeMap<PathBuf, Arc<str>>;
 }
 
-pub async fn index_images<P: Into<PathBuf>>(input: P) -> Result<HashMap<PathBuf, Arc<str>>, Error> {
-    let mut map = HashMap::new();
+pub async fn index_images<P: Into<PathBuf>>(input: P) -> Result<BTreeMap<PathBuf, Arc<str>>, Error> {
+    let mut map = BTreeMap::new();
     let mut entries = read_dir(input.into()).await?;
 
     for entry in entries
         .next_entry()
-        .await
+        .await?
         .iter()
-        .filter_map(|entry| match entry {
-            Some(value) => Some(value.path()),
-            None => None,
-        })
+        .map(|entry| entry.path())
         .filter_map(|f| f.is_image())
         .map(|path| (path.clone(), String::from(path.to_string_lossy())))
     {
@@ -33,8 +30,8 @@ pub async fn index_images<P: Into<PathBuf>>(input: P) -> Result<HashMap<PathBuf,
 }
 
 impl PathBufExtras for PathBuf {
-    async fn merge_images<S: AsRef<str>>(&self, map: HashMap<PathBuf, Arc<str>>, format: S) -> HashMap<PathBuf, Arc<str>> {
-        let mut out_map = HashMap::new();
+    async fn merge_images<S: AsRef<str>>(&self, map: BTreeMap<PathBuf, Arc<str>>, format: S) -> BTreeMap<PathBuf, Arc<str>> {
+        let mut out_map = BTreeMap::new();
 
         for (path, _boxed_path) in map {
             let new_path = path.with_extension(format.as_ref());
