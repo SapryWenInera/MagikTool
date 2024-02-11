@@ -3,10 +3,7 @@ use std::io::Error;
 use std::path::PathBuf;
 use tokio::fs::read_dir;
 
-use self::image::ImageManipulation;
-
-pub mod convertion;
-pub mod image;
+use crate::image::ImageManipulation;
 
 pub async fn index_images<P: Into<PathBuf>>(input: P) -> Result<HashMap<PathBuf, Box<str>>, Error> {
     let mut map = HashMap::new();
