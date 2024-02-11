@@ -23,7 +23,7 @@ fn main() {
         runtime.block_on(index_images(&args.input)).unwrap()
 
     } else {
-        let value: Box<str> = Box::from(args.input.to_str().unwrap());
+        let value: Arc<str> = Arc::from(args.input.to_str().unwrap());
         let mut image = HashMap::new();
 
         image.insert(args.input, value);
@@ -37,7 +37,7 @@ fn main() {
     let _ = convert_images(input_map, output_map, args);
 }
 
-fn convert_images(input: HashMap<PathBuf, Box<str>>, output: HashMap<PathBuf, Box<str>>, args: Vec<&str>) {
+fn convert_images(input: HashMap<PathBuf, Arc<str>>, output: HashMap<PathBuf, Arc<str>>, args: Vec<&str>) {
     let mut out = output.into_iter();
     input.into_iter().for_each(|(path, _boxed_path)| {
         let (out_path, _boxed_out_path) = out.next().unwrap();
