@@ -2,9 +2,12 @@ mod image;
 mod operations;
 mod parser;
 
-use std::{collections::HashMap, fs::create_dir_all, path::PathBuf, process::Command, sync::Arc};
+use std::collections::BTreeMap;
+use std::{fs::create_dir_all, path::PathBuf, process::Command, sync::Arc};
 
 use operations::{index_images, PathBufExtras};
+use rayon::iter::IntoParallelIterator;
+use rayon::iter::ParallelIterator;
 use tokio::runtime::Runtime;
 
 use crate::parser::Parser;
@@ -24,7 +27,7 @@ fn main() {
 
     } else {
         let value: Arc<str> = Arc::from(args.input.to_str().unwrap());
-        let mut image = HashMap::new();
+        let mut image = BTreeMap::new();
 
         image.insert(args.input, value);
 
@@ -37,10 +40,10 @@ fn main() {
     let _ = convert_images(input_map, output_map, args);
 }
 
-fn convert_images(input: HashMap<PathBuf, Arc<str>>, output: HashMap<PathBuf, Arc<str>>, args: Vec<&str>) {
-    let mut out = output.into_iter();
-    input.into_iter().for_each(|(path, _boxed_path)| {
-        let (out_path, _boxed_out_path) = out.next().unwrap();
+fn convert_images(input: BTreeMap<PathBuf, Arc<str>>, output: BTreeMap<PathBuf, Arc<str>>, args: Vec<&str>) {
+    let out = output.into_iter().next();
+    input.into_par_iter().for_each(|(path, _boxed_path)| {
+        let (out_path, _boxed_out_path) = out.clone().unwrap();
 
         match Command::new("convert").arg(path).args(args.clone()).arg(out_path).spawn() {
             Ok(mut r) => match r.wait() {
