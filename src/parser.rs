@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use argparse::{ArgumentParser, Collect, Store};
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Parser {
     pub input: PathBuf,
     pub output: PathBuf,
