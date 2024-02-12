@@ -9,6 +9,7 @@ use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
 use tokio::runtime::Runtime;
 
+use crate::image::ImageManipulation;
 use crate::parser::Parser;
 
 fn main() {
@@ -16,9 +17,13 @@ fn main() {
     let mut args = Parser::new();
     args.args_parse();
     dbg!(&args);
-    if !args.output.exists() && args.input.is_dir() {
-        create_dir_all(&args.output).unwrap();
-    };
+    match args.output.is_image() {
+        Some(p) => match p.exists() {
+            true => (),
+            false => create_dir_all(p).unwrap()
+        },
+        None => ()
+    }
 
     let input_map = if args.input.is_dir() {
         runtime.block_on(index_images(args.input)).unwrap()
