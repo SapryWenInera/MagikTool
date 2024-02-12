@@ -17,13 +17,13 @@ fn main() {
     let mut args = Parser::new();
     args.args_parse();
     dbg!(&args);
-    match args.output.is_image() {
-        Some(p) => match p.exists() {
-            true => (),
-            false => create_dir_all(p).unwrap()
-        },
-        None => ()
-    }
+    match args.output.exists() {
+        true => (),
+        false => match args.output.is_image() {
+            Some(_) => (),
+            None => create_dir_all(&args.output).unwrap()
+        }
+    };
 
     let input_map = if args.input.is_dir() {
         runtime.block_on(index_images(args.input)).unwrap()

@@ -27,7 +27,10 @@ impl PathBufExtras for PathBuf {
             let file_name = new_path.file_name().unwrap().to_string_lossy();
             let out_path = self.join(String::from(file_name));
 
-            out_map.insert(path, out_path);
+            match self.is_image() {
+                Some(p) => out_map.insert(path, p),
+                None => out_map.insert(path, out_path)
+            };
 
         }
 
