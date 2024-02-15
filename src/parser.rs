@@ -1,11 +1,11 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use argparse::{ArgumentParser, Collect, Store};
 
 #[derive(Clone, Debug)]
 pub struct Parser {
-    pub input: PathBuf,
-    pub output: PathBuf,
+    pub input: Box<Path>,
+    pub output: Box<Path>,
     pub format: Box<str>,
     pub options: Box<str>,
 }
@@ -13,8 +13,8 @@ pub struct Parser {
 impl Parser {
     pub fn new() -> Parser {
         Parser {
-            input: PathBuf::new(),
-            output: PathBuf::new(),
+            input: PathBuf::new().into_boxed_path(),
+            output: PathBuf::new().into_boxed_path(),
             format: Box::from("jxl"),
             options: Box::from("-define jxl:effort=1-4"),
         }
@@ -56,11 +56,11 @@ impl Parser {
             let _ = parser.parse_args_or_exit();
         }
 
-        self.input = PathBuf::from(input);
+        self.input = PathBuf::from(input).into_boxed_path();
         self.output = if output.is_empty() {
             self.input.clone()
         } else {
-            PathBuf::from(output)
+            PathBuf::from(output).into_boxed_path()
         };
         self.format = Box::from(format);
         self.options = options.join(" ").into_boxed_str();

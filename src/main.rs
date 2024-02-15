@@ -3,7 +3,7 @@ mod operations;
 mod parser;
 
 use std::collections::BTreeMap;
-use std::{fs::create_dir_all, path::PathBuf, process::Command, sync::Arc};
+use std::{fs::create_dir_all, path::Path, process::Command, sync::Arc};
 use operations::{index_images, PathBufExtras};
 use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
@@ -44,8 +44,8 @@ fn main() {
     let _ = convert_images(output_map, args);
 }
 
-fn convert_images(input: BTreeMap<PathBuf, PathBuf>, args: Vec<&str>) {
+fn convert_images(input: BTreeMap<Box<Path>, Box<Path>>, args: Vec<&str>) {
     input.par_iter().for_each(|(input_path, output_path)| {
-        Command::new("convert").arg(input_path).args(args.clone()).arg(output_path).spawn().unwrap().wait().unwrap();
+        Command::new("convert").arg(input_path.as_os_str()).args(args.clone()).arg(output_path.as_os_str()).spawn().unwrap().wait().unwrap();
     })
 }

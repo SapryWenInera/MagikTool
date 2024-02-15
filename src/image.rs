@@ -1,13 +1,13 @@
-use std::path::PathBuf;
+use std::path::Path;
 
 const EXTENSIONS: [&str; 6] = ["heic", "jpeg", "jpg", "jxl", "png", "webp"];
 
 pub trait ImageManipulation {
-    fn is_image(&self) -> Option<PathBuf>;
+    fn is_image(&self) -> Option<Box<Path>>;
 }
 
-impl ImageManipulation for PathBuf {
-    fn is_image(&self) -> Option<PathBuf> {
+impl ImageManipulation for Path {
+    fn is_image(&self) -> Option<Box<Path>> {
         let extensions = EXTENSIONS;
         for extension in extensions {
             let r = match self.extension() {
@@ -16,7 +16,7 @@ impl ImageManipulation for PathBuf {
             };
 
             if r {
-                return Some(self.to_owned());
+                return Some(Box::from(self));
             }
         }
 
