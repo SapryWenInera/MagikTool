@@ -2,38 +2,43 @@ use std::collections::BTreeMap;
 use std::fs::read_dir;
 use std::io::Error;
 use std::path::Path;
-use std::sync::Arc;
+
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 use crate::image::ImageManipulation;
 
-pub trait PathBufExtras {
-    async fn merge_images<S: AsRef<str>>(&self, map: BTreeMap<Box<Path>, Arc<str>>, format: S) -> BTreeMap<Box<Path>, Box<Path>>;
+pub trait BtreeIterator {
+    async fn merge_images<S: AsRef<str> + std::marker::Sync>(self, o_path: Box<Path>, format: S) -> BTreeMap<Box<Path>, Box<Path>>;
 }
 
-pub async fn index_images<P: Into<Box<Path>>>(input: P) -> Result<BTreeMap<Box<Path>, Arc<str>>, Error> {
+pub async fn index_images<P: Into<Box<Path>>>(input: P) -> Result<BTreeMap<Box<Path>, ()>, Error> {
     let input: Box<Path> = input.into();
     let map = read_dir(input)?.map(|r| r.unwrap())
-    .filter_map(|f| f.path().is_image()).map(|p| (p.clone(), Arc::from(p.to_string_lossy().to_string()))).collect();
+    .filter_map(|f| f.path().is_image()).map(|p| (p, ())).collect();
     dbg!(&map);
     Ok(map)
 }
 
-impl PathBufExtras for Path {
-    async fn merge_images<S: AsRef<str>>(&self, map: BTreeMap<Box<Path>, Arc<str>>, format: S) -> BTreeMap<Box<Path>, Box<Path>> {
-        let mut out_map = BTreeMap::new();
-
-        for (path, _boxed_path) in map {
-            let new_path = path.with_extension(format.as_ref());
-            let file_name = new_path.file_name().unwrap().to_string_lossy();
-            let out_path = self.join(String::from(file_name)).into_boxed_path();
-
-            match self.is_image() {
-                Some(p) => out_map.insert(path, p),
-                None => out_map.insert(path, out_path)
-            };
-
-        }
-
-        out_map
+impl BtreeIterator for BTreeMap<Box<Path>, ()> {
+    async fn merge_images<S: AsRef<str> + std::marker::Sync>(self, o_path: Box<Path>, format: S) -> BTreeMap<Box<Path>, Box<Path>> {
+        self.par_iter().filter_map(|(key, _val)| solve(key.to_owned(), o_path.clone(),format.as_ref())).collect()
     }
+}
+
+fn solve<S: AsRef<str>>(i_p: impl Into<Box<Path>>, o_p: impl Into<Box<Path>>, f: S) -> Option<(Box<Path>, Box<Path>)> {
+     let path: Box<Path> = i_p.into();
+     let o_path: Box<Path> = o_p.into();
+     let file_name = path.file_name()?;
+     
+     match o_path.is_image() {
+         Some(image) => {
+             let out_path = image.with_extension(f.as_ref());
+             Some((path, out_path.into_boxed_path()))
+         },
+         None => {
+             let out_path = o_path.join(file_name).with_extension(f.as_ref());
+             
+             Some((path, out_path.into_boxed_path()))
+         }
+     }
 }
