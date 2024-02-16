@@ -21,7 +21,10 @@ fn main() {
     match args.output.exists() {
         true => (),
         false => match args.output.is_image() {
-            Some(_) => (),
+            Some(_) => {
+                let parent = args.output.parent().unwrap();
+                create_dir_all(parent).unwrap()
+            },
             None => create_dir_all(&args.output).unwrap()
         }
     };
