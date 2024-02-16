@@ -15,7 +15,7 @@ impl Parser {
         Parser {
             input: PathBuf::new().into_boxed_path(),
             output: PathBuf::new().into_boxed_path(),
-            format: Box::from("jxl"),
+            format: Box::from(""),
             options: Box::from("-define jxl:effort=1-4"),
         }
     }
@@ -55,14 +55,23 @@ impl Parser {
 
             parser.parse_args_or_exit();
         }
-
+        dbg!(&input);
+        dbg!(&output);
+        dbg!(&format);
+        dbg!(&options);
         self.input = PathBuf::from(input).into_boxed_path();
         self.output = if output.is_empty() {
             self.input.clone()
         } else {
             PathBuf::from(output).into_boxed_path()
         };
-        self.format = Box::from(format);
+        self.format = if self.output.extension().is_none() && format.is_empty() {
+            Box::from("jxl")
+        } else if !format.is_empty() {
+            Box::from(format)
+        } else {
+            Box::from(self.output.extension().unwrap().to_string_lossy())
+        };
         self.options = options.join(" ").into_boxed_str();
     }
 }
