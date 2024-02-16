@@ -53,7 +53,7 @@ impl Parser {
                 "Arguments to pass to ImageMagick",
             );
 
-            let _ = parser.parse_args_or_exit();
+            parser.parse_args_or_exit();
         }
 
         self.input = PathBuf::from(input).into_boxed_path();
