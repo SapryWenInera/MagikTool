@@ -1,6 +1,5 @@
-use std::path::{Path, PathBuf};
-
 use argparse::{ArgumentParser, Collect, Store};
+use std::path::{Path, PathBuf};
 
 #[derive(Clone, Debug)]
 pub struct Parser {
@@ -24,7 +23,12 @@ impl Parser {
         let mut input = String::from(self.input.to_string_lossy());
         let mut output = String::from(self.output.to_string_lossy());
         let mut format = String::from(self.format.as_ref());
-        let mut options: Vec<String> = self.options.clone().split_whitespace().map(|s| String::from(s)).collect();
+        let mut options: Vec<String> = self
+            .options
+            .clone()
+            .split_whitespace()
+            .map(|s| String::from(s))
+            .collect();
         {
             let mut parser = ArgumentParser::new();
 

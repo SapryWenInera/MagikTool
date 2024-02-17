@@ -12,7 +12,7 @@ impl ImageManipulation for Path {
         for extension in extensions {
             let r = match self.extension() {
                 Some(v) => v.eq(extension),
-                None => false 
+                None => false,
             };
 
             if r {
