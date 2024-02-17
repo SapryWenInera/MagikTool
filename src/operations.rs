@@ -21,11 +21,11 @@ pub async fn index_images<P: Into<Box<Path>>>(input: P) -> Result<BTreeMap<Box<P
 
 impl BtreeIterator for BTreeMap<Box<Path>, ()> {
     async fn merge_images<S: AsRef<str> + std::marker::Sync>(self, o_path: Box<Path>, format: S) -> BTreeMap<Box<Path>, Box<Path>> {
-        self.par_iter().filter_map(|(key, _val)| solve(key.to_owned(), o_path.clone(),format.as_ref())).collect()
+        self.par_iter().filter_map(|(key, _val)| path_indexer(key.to_owned(), o_path.clone(),format.as_ref())).collect()
     }
 }
 
-fn solve<S: AsRef<str>>(i_p: impl Into<Box<Path>>, o_p: impl Into<Box<Path>>, f: S) -> Option<(Box<Path>, Box<Path>)> {
+fn path_indexer<S: AsRef<str>>(i_p: impl Into<Box<Path>>, o_p: impl Into<Box<Path>>, f: S) -> Option<(Box<Path>, Box<Path>)> {
      let path: Box<Path> = i_p.into();
      let o_path: Box<Path> = o_p.into();
      let file_name = path.file_name()?;
