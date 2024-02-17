@@ -1,16 +1,16 @@
 mod image;
-mod operations;
+mod logic;
 mod parser;
 
 use std::collections::BTreeMap;
 use std::{fs::create_dir_all, path::Path, process::Command, sync::Arc};
-use operations::index_images;
+use logic::index_images;
 use rayon::iter::IntoParallelRefIterator;
 use rayon::iter::ParallelIterator;
 use tokio::runtime::Runtime;
 
 use crate::image::ImageManipulation;
-use crate::operations::BtreeIterator;
+use crate::logic::BtreeIterator;
 use crate::parser::Parser;
 
 fn main() {
