@@ -15,7 +15,7 @@ impl Parser {
             input: PathBuf::new().into_boxed_path(),
             output: PathBuf::new().into_boxed_path(),
             format: Box::from(""),
-            options: Box::from("-define jxl:effort=1-4"),
+            options: Box::from(""),
         }
     }
 
