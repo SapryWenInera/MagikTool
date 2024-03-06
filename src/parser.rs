@@ -59,10 +59,6 @@ impl Parser {
 
             parser.parse_args_or_exit();
         }
-        dbg!(&input);
-        dbg!(&output);
-        dbg!(&format);
-        dbg!(&options);
         self.input = PathBuf::from(input).into_boxed_path();
         self.output = if output.is_empty() {
             self.input.clone()

@@ -3,6 +3,7 @@ mod logic;
 mod parser;
 
 use crate::{image::ImageManipulation, logic::BtreeIterator, parser::Parser};
+use indicatif::{ProgressBar, ProgressStyle};
 use logic::index_images;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use std::{collections::BTreeMap, fs::create_dir_all, path::Path, process::Command, sync::Arc};
@@ -12,7 +13,6 @@ fn main() {
     let runtime = Arc::from(Runtime::new().unwrap());
     let mut args = Parser::new();
     args.args_parse();
-    dbg!(&args);
     match args.output.exists() {
         true => (),
         false => match args.output.is_image() {
@@ -33,14 +33,18 @@ fn main() {
 
         image
     };
-    dbg!(&input_map);
     let output_map = runtime.block_on(input_map.merge_images(args.output, args.format));
-    dbg!(&output_map);
     let options: Vec<&str> = args.options.split_whitespace().collect();
     runtime.block_on(convert_images(output_map, options));
 }
 
 async fn convert_images(input: BTreeMap<Box<Path>, Box<Path>>, args: Vec<&str>) {
+    let pb = ProgressBar::new(input.len() as u64);
+    pb.set_style(
+        ProgressStyle::with_template("[{elapsed_precise}] [{wide_bar:.green/red}]    {human_pos:.cyan}/{human_len:.blue} {spinner}",
+        )
+        .unwrap()
+        .progress_chars("#>-"),);
     input.par_iter().for_each(|(input_path, output_path)| {
         Command::new("convert")
             .arg(input_path.as_os_str())
@@ -50,5 +54,6 @@ async fn convert_images(input: BTreeMap<Box<Path>, Box<Path>>, args: Vec<&str>) 
             .unwrap()
             .wait()
             .unwrap();
+        pb.inc(1);
     })
 }
