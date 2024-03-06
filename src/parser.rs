@@ -1,28 +1,34 @@
 use argparse::{ArgumentParser, Collect, Store};
+use std::path::{Path, PathBuf};
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Parser {
-    pub input: String,
-    pub output: String,
-    pub format: String,
-    pub options: Vec<String>,
-}
-
-trait OutputHandler {
-    fn output_check(&mut self, string: String);
+    pub input: Box<Path>,
+    pub output: Box<Path>,
+    pub format: Box<str>,
+    pub options: Box<str>,
 }
 
 impl Parser {
     pub fn new() -> Parser {
         Parser {
-            input: String::new(),
-            output: String::new(),
-            format: String::from("jxl"),
-            options: Vec::from(["-define".to_string(), "jxl:effort=1-4".to_string()]),
+            input: PathBuf::new().into_boxed_path(),
+            output: PathBuf::new().into_boxed_path(),
+            format: Box::from(""),
+            options: Box::from(""),
         }
     }
 
     pub fn args_parse(&mut self) {
+        let mut input = String::from(self.input.to_string_lossy());
+        let mut output = String::from(self.output.to_string_lossy());
+        let mut format = String::from(self.format.as_ref());
+        let mut options: Vec<String> = self
+            .options
+            .clone()
+            .split_whitespace()
+            .map(|s| String::from(s))
+            .collect();
         {
             let mut parser = ArgumentParser::new();
 
@@ -31,36 +37,41 @@ impl Parser {
             parser.stop_on_first_argument(true);
 
             parser
-                .refer(&mut self.input)
+                .refer(&mut input)
                 .add_option(&["--input", "-i"], Store, "Input Field: File/Directory")
                 .required();
 
-            parser.refer(&mut self.output).add_option(
+            parser.refer(&mut output).add_option(
                 &["--output", "-o"],
                 Store,
                 "Output Field: File/Directory",
             );
-            parser.refer(&mut self.format).add_option(
+            parser.refer(&mut format).add_option(
                 &["--format", "-f"],
                 Store,
                 "Format for the output image. (Only required if --input is a directory)",
             );
-            parser.refer(&mut self.options).add_argument(
+            parser.refer(&mut options).add_argument(
                 "args",
                 Collect,
                 "Arguments to pass to ImageMagick",
             );
 
-            let _ = parser.parse_args_or_exit();
+            parser.parse_args_or_exit();
         }
-        let _ = self.output.output_check(self.input.clone());
-    }
-}
-
-impl OutputHandler for String {
-    fn output_check(&mut self, string: String) {
-        if self.is_empty() {
-            self.push_str(&string)
-        }
+        self.input = PathBuf::from(input).into_boxed_path();
+        self.output = if output.is_empty() {
+            self.input.clone()
+        } else {
+            PathBuf::from(output).into_boxed_path()
+        };
+        self.format = if self.output.extension().is_none() && format.is_empty() {
+            Box::from("jxl")
+        } else if !format.is_empty() {
+            Box::from(format)
+        } else {
+            Box::from(self.output.extension().unwrap().to_string_lossy())
+        };
+        self.options = options.join(" ").into_boxed_str();
     }
 }
