@@ -17,7 +17,6 @@ pub async fn index_images<P: Into<Box<Path>>>(input: P) -> Result<BTreeMap<Box<P
         .filter_map(|f| f.path().is_image())
         .map(|p| (p, ()))
         .collect();
-    dbg!(&map);
     Ok(map)
 }
 
